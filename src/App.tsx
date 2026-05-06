@@ -121,29 +121,33 @@ export default function App() {
     // Fetch from MySQL
     const fetchData = () => {
       fetch('/api/status')
-        .then(res => res.json())
+        .then(res => res.ok ? res.json() : { connected: false })
         .then(status => {
           if (status.connected) {
             setDbStatus('connected');
-            fetch('/api/tanks').then(res => res.json()).then(data => {
-              if (data && data.length > 0) {
-                setTanksData(data);
-              } else {
-                // Seed database with MOCK_DATA if empty
-                const initialData = MOCK_DATA.flatMap(block => block.tanks);
-                const tanksObj = initialData.reduce((acc, tank) => ({ ...acc, [tank.id]: tank }), {});
-                fetch('/api/tanks', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(tanksObj)
-                }).then(() => setTanksData(initialData));
-              }
+            fetch('/api/tanks').then(res => res.ok ? res.json() : [])
+              .then(data => {
+                if (data && data.length > 0) {
+                  setTanksData(data);
+                } else {
+                  // Seed database with MOCK_DATA if empty
+                  const initialData = MOCK_DATA.flatMap(block => block.tanks);
+                  const tanksObj = initialData.reduce((acc, tank) => ({ ...acc, [tank.id]: tank }), {});
+                  fetch('/api/tanks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(tanksObj)
+                  }).then(() => setTanksData(initialData)).catch(() => setTanksData(initialData));
+                }
+            }).catch(() => {
+              setTanksData(MOCK_DATA.flatMap(block => block.tanks));
             });
           } else {
             setDbStatus('disconnected');
           }
         })
-        .catch(() => {
+        .catch(err => {
+          console.error("Failed to fetch status:", err);
           setDbStatus('disconnected');
         });
     };
