@@ -1,0 +1,120 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "系统用户",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "operator", "viewer"] },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "role"]
+    },
+    "Tank": {
+      "title": "Tank",
+      "description": "養殖池數據",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string" },
+        "temperature": { "type": "number" },
+        "ph": { "type": "number" },
+        "oxygen": { "type": "number" },
+        "waterLevel": { "type": "number" },
+        "nh3": { "type": "number" },
+        "no2": { "type": "number" },
+        "farming": { "type": "object" },
+        "equipment": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "status"]
+    },
+    "InOutRecord": {
+      "title": "InOutRecord",
+      "description": "出入庫記錄",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "tankId": { "type": "string" },
+        "type": { "type": "string", "enum": ["purchaseIn", "transferIn", "salesOut", "transferOut"] },
+        "amount": { "type": "number" },
+        "species": { "type": "string" },
+        "size": { "type": "string" },
+        "count": { "type": "number" },
+        "remarks": { "type": "string" },
+        "operatorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "tankId", "type", "amount"]
+    },
+    "FeedMedRecord": {
+      "title": "FeedMedRecord",
+      "description": "投喂與用藥記錄",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "tankId": { "type": "string" },
+        "feedType": { "type": "string" },
+        "feedAmount": { "type": "number" },
+        "medicineName": { "type": "string" },
+        "medicineAmount": { "type": "number" },
+        "remarks": { "type": "string" },
+        "operatorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "tankId"]
+    },
+    "LossRecord": {
+      "title": "LossRecord",
+      "description": "損耗記錄",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "tankId": { "type": "string" },
+        "deadCount": { "type": "number" },
+        "reason": { "type": "string" },
+        "operatorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "tankId", "deadCount"]
+    },
+    "Config": {
+      "title": "Config",
+      "description": "系统配置与品牌化",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "brandingTitle": { "type": "string" }
+      }
+    },
+    "Traceability": {
+      "title": "Traceability",
+      "description": "溯源信息",
+      "type": "object",
+      "properties": {
+        "batchId": { "type": "string" },
+        "tankId": { "type": "string" },
+        "species": { "type": "string" },
+        "stockingDate": { "type": "string", "format": "date" },
+        "harvestDate": { "type": "string", "format": "date" },
+        "feedLogs": { "type": "array" },
+        "waterLogs": { "type": "array" }
+      },
+      "required": ["batchId", "species"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "User" }, "description": "系统用户档案" },
+    "/tanks/{tankId}": { "schema": { "$ref": "Tank" }, "description": "養殖池即时數據" },
+    "/records_inout/{recordId}": { "schema": { "$ref": "InOutRecord" }, "description": "历史出入庫记录" },
+    "/records_feedmed/{recordId}": { "schema": { "$ref": "FeedMedRecord" }, "description": "历史投喂与用药记录" },
+    "/records_loss/{recordId}": { "schema": { "$ref": "LossRecord" }, "description": "历史損耗记录" },
+    "/traceability/{traceId}": { "schema": { "$ref": "Traceability" }, "description": "产品溯源档案" },
+    "/settings/branding": { "schema": { "$ref": "Config" }, "description": "系统全局配置" }
+  }
+}
