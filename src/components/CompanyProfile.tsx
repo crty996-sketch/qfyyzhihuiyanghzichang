@@ -78,17 +78,23 @@ export default function CompanyProfile({ onClose }: CompanyProfileProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[110] bg-slate-950 flex flex-col overflow-hidden text-slate-200">
-      {/* Background Image */}
+    <div className="fixed inset-0 z-[110] bg-[#020617] flex flex-col overflow-hidden text-slate-200">
+      {/* Dynamic Background */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center opacity-40 transition-all duration-1000" 
+        className="absolute inset-0 z-0 opacity-30" 
         style={{ 
-          backgroundImage: 'url("https://images.unsplash.com/photo-1544333346-64799de3564c?auto=format&fit=crop&q=80&w=2070")',
-          backgroundBlendMode: 'overlay'
+          backgroundImage: 'url("https://images.unsplash.com/photo-1516710114703-b0f340e343b4?auto=format&fit=crop&q=80&w=2070")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }} 
       />
+      
+      {/* Animated Light Blobs for depth */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/10 blur-[120px] rounded-full animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+
       {/* Overlay to ensure readability */}
-      <div className="absolute inset-0 z-[1] bg-slate-950/50" />
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#020617]/80 via-[#020617]/40 to-[#020617]/90 backdrop-blur-[2px]" />
 
       {/* Top Navigation Bar */}
       <header className="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 flex items-center justify-between flex-shrink-0 relative z-10">
@@ -144,71 +150,83 @@ export default function CompanyProfile({ onClose }: CompanyProfileProps) {
         <div className="max-w-4xl mx-auto space-y-16 pb-20">
           
           {/* Section 1: Introduction */}
-          <section className="space-y-6">
-            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl border-l-4 border-cyan-500 pl-4 py-1">
-              <Building2 size={24} />
+          <section className="space-y-6 bg-slate-900/40 backdrop-blur-md border border-white/5 p-8 rounded-3xl shadow-2xl relative group hover:border-cyan-500/30 transition-all duration-500">
+            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl py-1">
+              <Building2 className="text-cyan-500" size={24} />
               <span>一、公司简介</span>
             </h3>
+            <div className="absolute top-6 right-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Building2 size={80} />
+            </div>
             {isEditing ? (
               <textarea 
                 value={data.introduction}
                 onChange={(e) => setData({ ...data, introduction: e.target.value })}
-                className="w-full h-64 bg-slate-900 border border-slate-700 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed"
+                className="w-full h-64 bg-slate-950/50 border border-slate-700/50 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed font-medium"
                 placeholder="请输入公司简介内容..."
               />
             ) : (
-              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap pl-5">
+              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap font-medium">
                 {data.introduction}
               </div>
             )}
           </section>
 
           {/* Section 2: Business & Performance */}
-          <section className="space-y-6">
-            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl border-l-4 border-cyan-500 pl-4 py-1">
-              <TrendingUp size={24} />
+          <section className="space-y-6 bg-slate-900/40 backdrop-blur-md border border-white/5 p-8 rounded-3xl shadow-2xl relative group hover:border-blue-500/30 transition-all duration-500">
+            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl py-1">
+              <TrendingUp className="text-blue-500" size={24} />
               <span>二、主要业务与经营情况</span>
             </h3>
+            <div className="absolute top-6 right-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <TrendingUp size={80} />
+            </div>
             {isEditing ? (
               <textarea 
                 value={data.performance}
                 onChange={(e) => setData({ ...data, performance: e.target.value })}
-                className="w-full h-64 bg-slate-900 border border-slate-700 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed"
+                className="w-full h-64 bg-slate-950/50 border border-slate-700/50 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed font-medium"
                 placeholder="请输入业务及营收情况内容..."
               />
             ) : (
-              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap pl-5">
+              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap font-medium">
                 {data.performance}
               </div>
             )}
           </section>
 
           {/* Section 3: Engineering Projects */}
-          <section className="space-y-6">
-            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl border-l-4 border-cyan-500 pl-4 py-1">
-              <MapPin size={24} />
+          <section className="space-y-6 bg-slate-900/40 backdrop-blur-md border border-white/5 p-8 rounded-3xl shadow-2xl relative group hover:border-indigo-500/30 transition-all duration-500">
+            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl py-1">
+              <MapPin className="text-indigo-500" size={24} />
               <span>三、基地工程建设</span>
             </h3>
+            <div className="absolute top-6 right-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <MapPin size={80} />
+            </div>
             {isEditing ? (
               <textarea 
                 value={data.projects}
                 onChange={(e) => setData({ ...data, projects: e.target.value })}
-                className="w-full h-48 bg-slate-900 border border-slate-700 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed"
+                className="w-full h-48 bg-slate-950/50 border border-slate-700/50 rounded-xl p-6 text-slate-200 focus:border-cyan-500 outline-none transition-colors leading-relaxed font-medium"
                 placeholder="请输入基地建设情况内容..."
               />
             ) : (
-              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap pl-5">
+              <div className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap font-medium">
                 {data.projects}
               </div>
             )}
           </section>
 
           {/* Section 4: Science & Cooperation */}
-          <section className="space-y-6">
-            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl border-l-4 border-cyan-500 pl-4 py-1">
-              <Info size={24} />
+          <section className="space-y-6 bg-slate-900/40 backdrop-blur-md border border-white/5 p-8 rounded-3xl shadow-2xl relative group hover:border-emerald-500/30 transition-all duration-500">
+            <h3 className="text-cyan-400 font-bold flex items-center gap-3 text-xl py-1">
+              <Info className="text-emerald-500" size={24} />
               <span>四、产学研合作与愿景</span>
             </h3>
+            <div className="absolute top-6 right-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Info size={80} />
+            </div>
             {isEditing ? (
               <textarea 
                 value={data.cooperation}

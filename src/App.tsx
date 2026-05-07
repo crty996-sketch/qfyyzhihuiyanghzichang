@@ -408,13 +408,20 @@ export default function App() {
           演示模式：正在使用本地模拟数据。
         </div>
       )}
-      {/* Background Grid Pattern */}
+      {/* Background Layer */}
+      <div className="fixed inset-0 z-0 bg-[#050b1a]" />
+      
+      {/* Dynamic Background Effects */}
       <div className="fixed inset-0 z-0 opacity-20 pointer-events-none" 
         style={{ 
-          backgroundImage: `radial-gradient(circle at 2px 2px, #1e293b 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 2px 2px, #334155 1px, transparent 0)`,
           backgroundSize: '40px 40px' 
         }} 
       />
+      
+      {/* Depth Blobs */}
+      <div className="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 blur-[100px] rounded-full pointer-events-none z-0" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/5 blur-[100px] rounded-full pointer-events-none z-0" />
       
       <DashboardHeader 
         onMenuClick={() => setIsSidebarOpen(true)} 
