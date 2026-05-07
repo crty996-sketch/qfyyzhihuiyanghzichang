@@ -116,7 +116,7 @@ export default function SopProcess({ onBack }: SopProcessProps) {
           <div className="w-7 h-7 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400">
             <ClipboardList size={16} />
           </div>
-          <h2 className="text-lg font-bold text-slate-100 tracking-wider">标准作业程序 (SOP)</h2>
+          <h2 className="text-xl font-semibold text-slate-100 tracking-wide">标准作业程序 (SOP)</h2>
         </div>
         
         {/* Tab Navigation */}
@@ -125,7 +125,7 @@ export default function SopProcess({ onBack }: SopProcessProps) {
             <button
               key={key}
               onClick={() => setActiveTab(key as any)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold transition-all whitespace-nowrap border-b-2 ${
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-all whitespace-nowrap border-b-2 ${
                 activeTab === key
                   ? 'text-white border-indigo-400'
                   : 'text-slate-500 border-transparent hover:text-slate-300'
@@ -167,11 +167,11 @@ export default function SopProcess({ onBack }: SopProcessProps) {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">选择养殖池</label>
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-1.5">选择养殖池</label>
                       <select 
                         value={selectedTank}
                         onChange={(e) => setSelectedTank(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-cyan-500/50"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-cyan-500/50"
                       >
                         {tanks.map(t => (
                           <option key={t.id} value={t.id}>{t.id} 系统</option>
@@ -180,11 +180,11 @@ export default function SopProcess({ onBack }: SopProcessProps) {
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">选择饲料类型</label>
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-1.5">选择饲料类型</label>
                       <select 
                         value={feedType}
                         onChange={(e) => setFeedType(e.target.value)}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-bold focus:outline-none focus:border-cyan-500/50"
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-cyan-500/50"
                       >
                         {warehouseFeeds.length > 0 ? (
                            warehouseFeeds.map(f => (
@@ -197,23 +197,23 @@ export default function SopProcess({ onBack }: SopProcessProps) {
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">投喂量 (KG)</label>
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest block mb-1.5">投喂量 (KG)</label>
                       <div className="relative">
                         <input 
                           type="number"
                           step="0.1"
                           value={feedAmount}
                           onChange={(e) => setFeedAmount(e.target.value)}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white font-mono font-black focus:outline-none focus:border-cyan-500/50"
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-lg text-white font-mono font-medium focus:outline-none focus:border-cyan-500/50"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">KG</div>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">KG</div>
                       </div>
                     </div>
 
                     <button 
                       onClick={handleLogFeeding}
                       disabled={isSubmitting}
-                      className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2"
+                      className="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl font-bold uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2"
                     >
                       {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
                       确认并同步仓储扣减
@@ -235,12 +235,12 @@ export default function SopProcess({ onBack }: SopProcessProps) {
             >
               <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 md:p-8 shadow-xl">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
+                  <h3 className="text-xl md:text-2xl font-semibold text-white flex items-center gap-3">
                     {React.cloneElement(sops[activeTab as keyof typeof sops].icon as React.ReactElement, { size: 20 })}
                     {sops[activeTab as keyof typeof sops].title}
                   </h3>
                 </div>
-                <p className="text-slate-400 text-xs mb-8">请严格遵守该流程，遇到无法处理的情况立即上报主管人员。</p>
+                <p className="text-slate-400 text-sm mb-8 font-medium">请严格遵守该流程，遇到无法处理的情况立即上报主管人员。</p>
                 
                 <div className="relative border-l-2 border-slate-700/50 ml-2 md:ml-4 space-y-4 md:space-y-8">
                   {sops[activeTab as keyof typeof sops].steps.map((step, index) => (
@@ -252,16 +252,16 @@ export default function SopProcess({ onBack }: SopProcessProps) {
                       
                       <div className={`p-3 md:p-6 rounded-xl border ${step.isCritical ? 'bg-red-500/10 border-red-500/20' : 'bg-slate-800/30 border-slate-700/50'} hover:bg-slate-800/80 transition-colors group relative`}>
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-1">
-                           <h4 className={`text-sm md:text-lg font-bold flex items-center gap-2 ${step.isCritical ? 'text-red-400' : 'text-slate-200'}`}>
-                              <span className="text-slate-500 font-mono text-xs pt-0.5">{(index + 1).toString().padStart(2, '0')}</span>
+                           <h4 className={`text-base md:text-lg font-semibold flex items-center gap-3 ${step.isCritical ? 'text-red-400' : 'text-slate-200'}`}>
+                              <span className="text-slate-500 font-mono text-sm pt-0.5">{(index + 1).toString().padStart(2, '0')}</span>
                               {step.title}
                            </h4>
                            <div className="flex items-center gap-3">
-                             {step.time && <span className="text-[10px] font-mono px-2 py-0.5 bg-slate-950 rounded text-cyan-400 self-start md:self-auto border border-slate-800 whitespace-nowrap">{step.time}</span>}
+                             {step.time && <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-950/50 rounded text-cyan-400 self-start md:self-auto border border-slate-800 whitespace-nowrap font-medium">{step.time}</span>}
                              {activeTab === 'daily' && step.title.includes('投喂') && (
                                <button 
                                  onClick={() => setLoggingStep({ ...step, index })}
-                                 className="px-3 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-lg active:scale-95"
+                                 className="px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-lg active:scale-95"
                                >
                                  <PlusCircle size={12} />
                                  登记作业
@@ -269,7 +269,7 @@ export default function SopProcess({ onBack }: SopProcessProps) {
                              )}
                            </div>
                         </div>
-                        <p className="text-slate-400 leading-relaxed text-xs md:text-base">
+                        <p className="text-slate-400 leading-relaxed text-sm md:text-base font-medium mt-1">
                           {step.desc}
                         </p>
                       </div>

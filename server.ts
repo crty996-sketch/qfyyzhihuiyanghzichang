@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -21,7 +22,7 @@ const MOCK_LOSS_RECORDS: any[] = [];
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-change-in-production';
 
 let pool: mysql.Pool | null = null;
@@ -448,7 +449,7 @@ async function initDB() {
       )
     `);
 
-    await syncFryWarehouse(connection);
+    // await syncFryWarehouse(connection); // Disabled auto-sync on boot to prevent recreating deleted warehouse records
 
     // Seed default if empty
     const [profileCount] = await connection.query('SELECT COUNT(*) as count FROM company_profile');
@@ -2034,10 +2035,6 @@ app.post('/api/warehouse/transfer', async (req, res) => {
 app.get('/api/warehouse', async (req, res) => {
   if (!pool) return res.status(503).json({ error: "MySQL not configured" });
   try {
-    const connection = await pool.getConnection();
-    await syncFryWarehouse(connection);
-    connection.release();
-
     const [rows] = await pool.query('SELECT * FROM warehouse');
     res.json(rows);
   } catch (err: any) {
@@ -2279,13 +2276,66 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (!fs.existsSync(indexPath)) {
+        return res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>系统启动异常</title>
+            <style>
+              body { font-family: sans-serif; padding: 40px; line-height: 1.6; background: #f87171; color: white; }
+              .container { max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.2); padding: 30px; border-radius: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>系统前端页面缺失 (dist/index.html 未找到)</h2>
+              <p>这通常是因为在内存较小（如2GB）的服务器上运行 <code>npm run build</code> 时，进程因为内存不足（OOM）被系统强制杀死了，导致前端文件没有成功编译出来。</p>
+              <h3>解决方案：</h3>
+              <ol>
+                <li><strong>本地编译后上传：</strong> 在您的个人电脑上运行该项目并执行 <code>npm run build</code>，然后将生成的 <code>dist</code> 文件夹完整打包上传到服务器覆盖。直接运行 <code>npm start</code> 即可。</li>
+                <li><strong>取消宝塔面板的自动 Build：</strong> 确保启动命令中去掉了 <code>npm run build</code>，只需保留 <code>cross-env NODE_ENV=production tsx server.ts</code> 即可！</li>
+                <li><strong>检查服务器日志：</strong> 在宝塔面板查看项目日志，如果出现 "Killed" 或 "杀死"，说明确实是内存被撑爆了。1G的虚拟内存可能仍然不够 Vite 在生产环境构建。</li>
+              </ol>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+      res.sendFile(indexPath);
     });
   }
 
   // Start listening immediately for Cloud Run health checks
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  const server = app.listen(PORT as number, "0.0.0.0", () => {
+    console.log('--------------------------------------------------');
+    console.log(`[启动成功] 服务器运行在: http://0.0.0.0:${PORT}`);
+    console.log(`[启动环境] NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`[运行模式] ${process.env.NODE_ENV === "production" ? "🚀 生产模式 (静态资源服务)" : "🛠️ 开发模式 (Vite HMR 中间件)"}`);
+    
+    if (process.env.NODE_ENV === "production") {
+      const distPath = path.join(process.cwd(), 'dist');
+      const indexPath = path.join(distPath, 'index.html');
+      if (!fs.existsSync(distPath)) {
+        console.error(`[致命错误] 找不到编译后的 dist 文件夹: ${distPath}`);
+        console.error(`请在本地确认是否执行了 'npm run build'，或检查服务器内存是否足够完成构建。`);
+      } else if (!fs.existsSync(indexPath)) {
+        console.error(`[致命错误] dist 文件夹存在，但找不到 index.html`);
+      } else {
+        console.log(`[资源确认] 静态页面路径: ${indexPath}`);
+      }
+    }
+    console.log('--------------------------------------------------');
+  });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[致命错误] 端口 ${PORT} 已被占用！请检查是否有其他 Node 进程正在运行。`);
+    } else {
+      console.error('[致命错误] 服务器启动失败:', err);
+    }
   });
 
   // Initialize DB asynchronously to not block startup
