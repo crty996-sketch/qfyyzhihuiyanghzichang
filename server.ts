@@ -23,12 +23,13 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error('JWT_SECRET is required and must be at least 32 characters.');
+  process.exit(1);
+}
 
 let pool: mysql.Pool | null = null;
-let mockUsersList: any[] = [
-  { id: 1, username: 'admin', role: 'admin', password: 'admin123', name: '系统管理员', permissions: ['farming', 'water', 'equipment', 'warehouse', 'inventory', 'finance', 'sop', 'traceability', 'settings', 'users'], phone: '', email: '' }
-];
 
 async function syncFryWarehouse(connection: any) {
   try {
@@ -239,12 +240,17 @@ async function initDB() {
     // Create default admin if no users exist
     const [users] = await connection.query('SELECT COUNT(*) as count FROM users');
     if ((users as any)[0].count === 0) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const bootstrapAdminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'admin123';
+      const hashedPassword = await bcrypt.hash(bootstrapAdminPassword, 10);
       await connection.query(
         'INSERT INTO users (username, password, role, name, permissions) VALUES (?, ?, ?, ?, ?)',
         ['admin', hashedPassword, 'admin', '系统管理员', JSON.stringify(['farming', 'water', 'equipment', 'warehouse', 'inventory', 'finance', 'sop', 'settings', 'users'])]
       );
-      console.log("Default admin user created (admin / admin123)");
+      if (process.env.BOOTSTRAP_ADMIN_PASSWORD) {
+        console.log('Default admin user created with BOOTSTRAP_ADMIN_PASSWORD.');
+      } else {
+        console.warn('Default admin user created with fallback password; set BOOTSTRAP_ADMIN_PASSWORD in production.');
+      }
     }
     
     await connection.query(`
@@ -681,9 +687,16 @@ app.get('/api/public/trace/:tankId/export', async (req, res) => {
   }
 });
 
-const authenticateToken = (req: any, res: any, next: any) => {
+const getTokenFromRequest = (req: any) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  if (authHeader && authHeader.startsWith('Bearer ')) return authHeader.split(' ')[1];
+  const cookieHeader = req.headers['cookie'] || '';
+  const match = cookieHeader.match(/(?:^|;\s*)access_token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+const authenticateToken = (req: any, res: any, next: any) => {
+  const token = getTokenFromRequest(req);
   if (token == null) return res.sendStatus(401);
 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
@@ -699,13 +712,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!pool) {
-      // Mock login if database is not configured
-      const user = mockUsersList.find(u => u.username === username);
-      if (user && user.password === password) {
-        const token = jwt.sign({ id: user.id, username: user.username, role: user.role, name: user.name, permissions: user.permissions }, JWT_SECRET, { expiresIn: '24h' });
-        return res.json({ token, user: { id: user.id, username: user.username, role: user.role, name: user.name, permissions: user.permissions } });
-      }
-      return res.status(401).json({ error: '用户名或密码错误' });
+      return res.status(503).json({ error: '数据库未连接，登录不可用' });
     }
 
     const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
@@ -724,10 +731,32 @@ app.post('/api/auth/login', async (req, res) => {
     
     const permissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions) : (user.permissions || []);
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role, name: user.name, permissions }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token, user: { id: user.id, username: user.username, role: user.role, name: user.name, permissions } });
+    const cookieParts = [
+      `access_token=${encodeURIComponent(token)}`,
+      'Path=/',
+      'HttpOnly',
+      'SameSite=Lax',
+      'Max-Age=86400'
+    ];
+    if (process.env.NODE_ENV === 'production') cookieParts.push('Secure');
+    res.setHeader('Set-Cookie', cookieParts.join('; '));
+    res.json({ user: { id: user.id, username: user.username, role: user.role, name: user.name, permissions } });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const cookieParts = [
+    'access_token=',
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0'
+  ];
+  if (process.env.NODE_ENV === 'production') cookieParts.push('Secure');
+  res.setHeader('Set-Cookie', cookieParts.join('; '));
+  res.json({ success: true });
 });
 
 app.get('/api/auth/me', authenticateToken, async (req: any, res: any) => {
