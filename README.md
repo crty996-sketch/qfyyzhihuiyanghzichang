@@ -16,5 +16,9 @@ View your app in AI Studio: https://ai.studio/apps/2251f795-928c-4964-9e29-16755
 1. Install dependencies:
    `npm install`
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+3. Set required backend env vars in `.env` (or your deployment secrets):
+   - `MYSQL_URL`
+   - `JWT_SECRET` (must be at least 32 chars)
+   - `BOOTSTRAP_ADMIN_PASSWORD` (recommended for first admin setup)
+4. Run the app:
    `npm run dev`

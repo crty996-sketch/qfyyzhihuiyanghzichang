@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Lock, User, Fish } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: (token: string, user: any) => void;
+  onLogin: (user: any) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -20,6 +20,7 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
@@ -35,8 +36,7 @@ export default function Login({ onLogin }: LoginProps) {
         throw new Error(data.error || '登录失败');
       }
 
-      localStorage.setItem('token', data.token);
-      onLogin(data.token, data.user);
+      onLogin(data.user);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -96,7 +96,7 @@ export default function Login({ onLogin }: LoginProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="密码 (默认: admin123)"
+              placeholder="请输入密码"
               className="w-full bg-slate-950/50 border border-slate-700 rounded-xl py-3 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
               required
             />

@@ -98,25 +98,18 @@ export default function App() {
     });
 
     // 2. Check auth token
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+    fetch('/api/auth/me', {
+      credentials: 'include'
+    })
       .then(res => res.json())
       .then(data => {
         if (data.user) {
           setUser(data.user);
           setIsAuthenticated(true);
-        } else {
-          localStorage.removeItem('token');
         }
       })
-      .catch(() => localStorage.removeItem('token'))
+      .catch(() => undefined)
       .finally(() => setIsAuthChecking(false));
-    } else {
-      setIsAuthChecking(false);
-    }
 
     // Fetch from MySQL
     const fetchData = () => {
@@ -155,18 +148,21 @@ export default function App() {
     fetchData(); // Initial fetch
     const interval = setInterval(fetchData, 3000); // Poll every 3s for real-time updates
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(menuInterval);
+      clearInterval(interval);
+    };
   }, []);
 
-  const handleLogin = (token: string, userData: any) => {
+  const handleLogin = (userData: any) => {
     // Ensure firebase auth
     signInAnonymously(auth).catch(console.error);
     setUser(userData);
     setIsAuthenticated(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
     setUser(null);
     setIsAuthenticated(false);
     setManagementMode('none');
@@ -722,4 +718,3 @@ export default function App() {
     </div>
   );
 }
-
